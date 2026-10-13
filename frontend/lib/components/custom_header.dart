@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../page/akun_page.dart';
 
@@ -13,7 +14,7 @@ class CustomHeader extends StatelessWidget {
   final bool showBackButton;
   final VoidCallback? onBackPressed;
   
-  // 🔥 TAMBAHKAN PARAMETER UNTUK MENGATUR UKURAN
+  // MENGATUR UKURAN
   final double searchTextSize;
   final double hintTextSize;
 
@@ -28,8 +29,8 @@ class CustomHeader extends StatelessWidget {
     this.showAvatar = true,
     this.showBackButton = false,
     this.onBackPressed,
-    this.searchTextSize = 16,    // 🔥 DEFAULT 16
-    this.hintTextSize = 14,       // 🔥 DEFAULT 14
+    this.searchTextSize = 16,    
+    this.hintTextSize = 14,       
   });
 
   @override
@@ -89,8 +90,20 @@ class CustomHeader extends StatelessWidget {
   Widget _buildLogo() {
     return Row(
       children: [
-        const Icon(Icons.menu_book_rounded, color: Colors.white, size: 26),
-        const SizedBox(width: 5),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: Image.asset(
+            "assets/images/QuranNoText.png",
+            width: 24,
+            height: 24,
+            fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(width: 10),
         Text(
           title,
           style: const TextStyle(
@@ -111,11 +124,36 @@ class CustomHeader extends StatelessWidget {
           MaterialPageRoute(builder: (context) => const AkunPage()),
         );
       },
-      child: CircleAvatar(
-        radius: 20,
-        backgroundColor: Colors.white,
-        backgroundImage: imagePath != null ? AssetImage(imagePath!) : null,
-        child: imagePath == null ? const Icon(Icons.person, color: Colors.grey) : null,
+      child: FutureBuilder<SharedPreferences>(
+        future: SharedPreferences.getInstance(),
+        builder: (context, snapshot) {
+          String initial = '?';
+          if (snapshot.hasData) {
+            final nama = snapshot.data!.getString('nama') ?? '';
+            if (nama.isNotEmpty) {
+              initial = nama[0].toUpperCase();
+            }
+          }
+
+          return Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                initial,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -142,14 +180,12 @@ class CustomHeader extends StatelessWidget {
           controller: controller,
           onChanged: onChanged,
           style: TextStyle(
-            fontSize: searchTextSize,  // 🔥 PAKAI PARAMETER
-            fontWeight: FontWeight.normal,
+            fontSize: searchTextSize,  //            fontWeight: FontWeight.normal,
           ),
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: TextStyle(
-              fontSize: hintTextSize,   // 🔥 PAKAI PARAMETER
-              color: Colors.grey[400],
+              fontSize: hintTextSize,   //              color: Colors.grey[400],
             ),
             border: InputBorder.none,
             icon: Icon(Icons.search, color: AppTheme.primaryColor, size: 20),
